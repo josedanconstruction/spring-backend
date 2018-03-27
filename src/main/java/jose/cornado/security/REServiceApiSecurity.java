@@ -30,13 +30,13 @@ public class REServiceApiSecurity extends WebSecurityConfigurerAdapter {
 		set.addAll(Arrays.asList(new String[]{"/administrative/api/add"}));
 		http
 		.csrf().disable() //rest api do not need csrf
-		.authorizeRequests()
-		.antMatchers(HttpMethod.GET, "/client/api", "/administrative/api/*").authenticated()
+		.authorizeRequests().antMatchers("/", "/api/**").permitAll()
+		.anyRequest().authenticated().antMatchers(HttpMethod.GET, "/client/api", "/administrative/api/*").authenticated()
 		.antMatchers(HttpMethod.PUT, "/administrative/api/*").authenticated()
 		.anyRequest().denyAll().and()
         .addFilterBefore(new REServiceApiToken("/login", "POST", authenticationManager()),
                 UsernamePasswordAuthenticationFilter.class)
-        .addFilterBefore(new REServicesEndPointFllter(verbToPath), 
+        .addFilterBefore(new REServicesEndPointFllter(verbToPath),
         		UsernamePasswordAuthenticationFilter.class);
 	}
 
