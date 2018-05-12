@@ -15,13 +15,13 @@ import jose.cornado.ReactiveMongoRepo;
 @RequestMapping(Controller.apiMapping)
 public class Controller {
 
-	public final static String apiMapping = "/client/api"; 
+	public final static String apiMapping = "/api/client"; 
 	@Autowired
 	private SimpleAsyncTaskExecutor taskPool;
 	@Autowired
 	private ReactiveMongoRepo mongoRepo;
 	
-	@GetMapping()
+	@GetMapping("city")
 	public  DeferredResult<ResponseEntity<String>> getReport(@RequestParam(name="area", required=true) String area, @RequestParam(name="report", required=false) String report){
 		
 		DeferredResult<ResponseEntity<String>> dr = new DeferredResult<ResponseEntity<String>>();
@@ -33,4 +33,14 @@ public class Controller {
 
 		return dr;
 	}
+	
+	@GetMapping()
+	public  DeferredResult<ResponseEntity<String>> getCities(){
+		
+		DeferredResult<ResponseEntity<String>> dr = new DeferredResult<ResponseEntity<String>>();
+		taskPool.execute(new RestRunnable(null, mongoRepo, dr, RestRunnable.Tasks.CITIES));
+
+		return dr;
+	}
+
 }

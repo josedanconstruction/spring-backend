@@ -21,7 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.async.DeferredResult;
 import jose.cornado.MongoRepo;
-import jose.cornado.REServiceArea;
+import josedanconstruction.models.PermitUrl;
+import josedanconstruction.models.REServiceArea;
 
 final class AddPermits extends ACityTask{
 
@@ -43,10 +44,10 @@ final class AddPermits extends ACityTask{
 		ResponseEntity<String> response;
 		Hashtable<String, JsonObject> geoJson = null;
 
-		for(String p : resLocation.permits){
+		for(PermitUrl p : resLocation.permits){
 			try{
 				//Boulder site only seems to accept curl as user agent
-				hb = RequestEntity.get(new URL(p).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0"); 
+				hb = RequestEntity.get(new URL(p.getUrl()).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0"); 
 				response = restClient.exchange(hb.build(), String.class);
 				if (response.getStatusCodeValue() == 200){
 					if (response.hasBody()){
@@ -103,8 +104,7 @@ final class AddPermits extends ACityTask{
 							//This is the date that triggers the update
 							resLocation.lastModified = System.currentTimeMillis();
 //							resLocation.lastModified = new SimpleDateFormat("mm/dd/yyyy").parse("06/01/2017").getTime(); //when reading from local May 2017 file
-							//repo.addToCityCatalog(Document.parse(gson.toJson(resLocation)), System.currentTimeMillis()); //when reading live
-							repo.addToCityCatalog(/*Document.parse(gson.toJson(resLocation))*/resLocation);
+							repo.addToCityCatalog(resLocation);
 							//The report is called master
 							repo.insert(resLocation.area, Document.parse("{ reports : true, list : [\"master\"]}"));
 							//Send response back to admin ui.
@@ -112,7 +112,7 @@ final class AddPermits extends ACityTask{
 						}
 						catch(Exception x){
 							deferredResult.setErrorResult(x);
-							repo.deleteCityFromCatalog(resLocation);
+//							repo.deleteCityFromCatalog(resLocation);
 							break;
 						}
 					}

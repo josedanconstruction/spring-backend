@@ -23,7 +23,8 @@ import com.opencsv.CSVReader;
 
 import jose.cornado.Case;
 import jose.cornado.MongoRepo;
-import jose.cornado.REServiceArea;
+import josedanconstruction.models.REServiceArea;
+import josedanconstruction.models.PermitUrl;
 
 final class UpdatePermits extends ACityTask {
 	int timeToSleep = 60000;  
@@ -45,14 +46,14 @@ final class UpdatePermits extends ACityTask {
 //		FileWriter writer;
 		while (!Thread.currentThread().isInterrupted()){
  			try {
-				for(String p : resLocation.permits){
+				for(PermitUrl p : resLocation.permits){
 					try{
 //						writer = new FileWriter("/Users/jose/babushka.json");
 //						sb1 = new StringBuilder("[");
-						hb = RequestEntity.head(new URL(p).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0").ifModifiedSince(resLocation.lastModified);
+						hb = RequestEntity.head(new URL(p.getUrl()).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0").ifModifiedSince(resLocation.lastModified);
 						response = restClient.exchange(hb.build(), String.class);
 						if (response.getStatusCode().is2xxSuccessful()){
-							hb = RequestEntity.get(new URL(p).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0").ifModifiedSince(this.resLocation.lastModified);
+							hb = RequestEntity.get(new URL(p.getUrl()).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0").ifModifiedSince(this.resLocation.lastModified);
 							response = restClient.exchange(hb.build(), String.class);
 							if (response.getStatusCode().is2xxSuccessful() && response.hasBody()){
 								//try(CSVReader rd = new CSVReader(new FileReader(new File("/Users/jose/2017_Construction_Permits.june.csv")))){
@@ -94,22 +95,16 @@ final class UpdatePermits extends ACityTask {
 											d = Document.parse(job.toString());
 											repo.updateCase(resLocation.area , d);
 										}
-//										sb1.append(d.toJson());
-//										sb1.append(',');
 									}
 								}
-//								sb1.setCharAt(sb1.length() - 1, ']');
-//								writer.write(sb1.toString());
-//								writer.flush();
-//								writer.close();
 								if (sb.length() - 1 != '[')
 									sb.setCharAt(sb.length() - 1, ']');
 								else
 									sb.append("\"NONE\"]");
 								sb.append('}');
 								repo.insert("log", Document.parse(sb.toString()));
-								//sresLocation.lastModified = System.currentTimeMillis();
-								resLocation.lastModified = 1496275200;
+								resLocation.lastModified = System.currentTimeMillis();
+								//resLocation.lastModified = 1496275200;
 								repo.updateLastModfied(resLocation);
 								geoJson = null;
 								timeStamp = null;

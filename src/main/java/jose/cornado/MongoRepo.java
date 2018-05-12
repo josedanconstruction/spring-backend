@@ -22,6 +22,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Sorts;
+import josedanconstruction.models.REServiceArea;
 
 // api params keywords, negativeKeywords associations (logical connectors)
 
@@ -99,13 +100,18 @@ public class MongoRepo {
 	}
 	
 	public String getLogs(){
+		int offset;
 		StringBuilder sb = new StringBuilder("[");
 		MongoCursor<Document> mc = template.getCollection("log").find().iterator();
-		while(mc.hasNext()){
-			sb.append(mc.next().toJson());
-			sb.append(',');
-		}
-		sb.setCharAt(sb.length() - 1, ']');
-		return sb.toString();
+			while(mc.hasNext()){
+				sb.append(mc.next().toJson());
+				sb.append(',');
+			}
+		offset = sb.length() - 1;
+		if (sb.charAt(offset) == ',')
+			sb.setCharAt(offset, ']');
+		else
+			sb.append(']');
+		return  sb.toString();
 	}	
 }

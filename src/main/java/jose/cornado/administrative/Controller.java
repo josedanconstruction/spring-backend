@@ -19,7 +19,7 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 
 import jose.cornado.MongoRepo;
-import jose.cornado.REServiceArea;
+import josedanconstruction.models.REServiceArea;
 
 @RestController(value="AdministrativeController")
 @RequestMapping(Controller.apiMapping)

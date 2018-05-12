@@ -1,9 +1,7 @@
 package jose.cornado;
 
-import java.util.ArrayList;
+import java.util.List;
 
-import org.bson.Document;
-import org.reactivestreams.Subscriber;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
@@ -11,8 +9,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import com.mongodb.reactivestreams.client.Success;
-
+import josedanconstruction.models.REServiceArea;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -41,5 +38,9 @@ public class ReactiveMongoRepo {
 		query2.addCriteria(Criteria.where("reportable").is(true)).with(new Sort(Sort.Direction.DESC, "totalValue"));
 		ret = template.find(query2, Case.class, collection);
 		return ret;
+	}
+	
+	public Mono<List<REServiceArea>> getAvailableCities(){
+		return template.findAll(REServiceArea.class, "cities").collectList(); 
 	}
 }

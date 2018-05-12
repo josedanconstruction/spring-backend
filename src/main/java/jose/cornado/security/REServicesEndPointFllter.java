@@ -41,31 +41,31 @@ public class REServicesEndPointFllter extends GenericFilterBean{
 		HashSet<String> paths;
 		HttpServletRequest request;
 		HttpServletResponse response;
-		SimpleGrantedAuthority sga;
 		ArrayList<SimpleGrantedAuthority> grantedRole;
 		UsernamePasswordAuthenticationToken auth;
 		if (arg0 instanceof HttpServletRequest){
 			request = (HttpServletRequest)arg0;
 			response = (HttpServletResponse)arg1;
 			token = request.getHeader("Authorization");
-			if (token != null){
-				paths = verbToPath.get(request.getMethod());
-				if (paths != null){
-					path =((HttpServletRequest) arg0).getServletPath();
-					if (paths.contains(path)){
-						if (tokenService == null)
-							tokenService = new JWTTokenUtil();
-						
-						claims = tokenService.getClaims(token);
-						token = claims.get("area").toString();
-						if (path.startsWith(token)){
-							token = claims.get("role").toString();
-							grantedRole = new ArrayList<SimpleGrantedAuthority>();
-							grantedRole.add(new SimpleGrantedAuthority(String.format("%s%s", "ROLE_", token.toUpperCase())));
-							auth =  new UsernamePasswordAuthenticationToken(claims.get("user").toString(), null, Collections.emptyList());
-							SecurityContextHolder.getContext().setAuthentication(auth);
-							arg2.doFilter(arg0, arg1);
-						}
+			if (token == null){
+				response.sendError(HttpStatus.FORBIDDEN.value());
+			}
+			paths = verbToPath.get(request.getMethod());
+			if (paths != null){
+				path =((HttpServletRequest) arg0).getServletPath();
+				if (paths.contains(path)){
+					if (tokenService == null)
+						tokenService = new JWTTokenUtil();
+					
+					claims = tokenService.getClaims(token);
+					token = claims.get("area").toString();
+					if (path.startsWith(token)){
+						token = claims.get("role").toString();
+						grantedRole = new ArrayList<SimpleGrantedAuthority>();
+						grantedRole.add(new SimpleGrantedAuthority(String.format("%s%s", "ROLE_", token.toUpperCase())));
+						auth =  new UsernamePasswordAuthenticationToken(claims.get("user").toString(), null, Collections.emptyList());
+						SecurityContextHolder.getContext().setAuthentication(auth);
+						arg2.doFilter(arg0, arg1);
 					}
 				}
 			}

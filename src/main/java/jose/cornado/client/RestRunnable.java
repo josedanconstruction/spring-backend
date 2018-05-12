@@ -13,13 +13,14 @@ import com.google.gson.GsonBuilder;
 import jose.cornado.Case;
 import jose.cornado.ReactiveMongoRepo;
 import jose.cornado.ReportList;
+import josedanconstruction.models.REServiceArea;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
 
 final class RestRunnable implements Runnable {
 
-	public enum  Tasks {REPORT_LIST, REPORT};
+	public enum  Tasks {CITIES, REPORT_LIST, REPORT};
 	
 	private final Tasks task;
 	private final String area;
@@ -34,6 +35,7 @@ final class RestRunnable implements Runnable {
 	}
 	
 	public void run() {
+		Mono<List<REServiceArea>> cities;
 		Mono<List<Case>> report;
 		Mono<ReportList> reports;
 		switch(task){
@@ -48,6 +50,10 @@ final class RestRunnable implements Runnable {
 			report = mongoRepo.getMasterReport(area).collectList();
 			report.subscribe(this::acceptReport, this::accept);
 			break;
+		case CITIES:
+			cities = mongoRepo.getAvailableCities();
+			cities.subscribe(this::accepCityList, this::accept);
+			break;
 		}
 	}
 
@@ -61,8 +67,12 @@ final class RestRunnable implements Runnable {
 	}
 	
 	private void acceptReport(List<Case> report){
-		Gson gson = new Gson();//GsonBuilder().excludeFieldsWithoutExposeAnnotation().create(); 
+		Gson gson = new Gson(); 
 		deferredResult.setResult(new ResponseEntity<String>(gson.toJson(report), HttpStatus.OK));
-		
+	}
+	
+	private void accepCityList(List<REServiceArea> list){
+		Gson gson = new Gson(); 
+		deferredResult.setResult(new ResponseEntity<String>(gson.toJson(list), HttpStatus.OK));
 	}
 }
