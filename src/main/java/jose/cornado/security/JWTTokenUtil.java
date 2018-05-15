@@ -3,37 +3,36 @@ package jose.cornado.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import jose.cornado.models.User;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.context.request.async.DeferredResult;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 
-import static java.util.Collections.emptyList;
 
 final class JWTTokenUtil {
-	static final long EXPIRATIONTIME = 10000 * 30;
+	private static final Logger logger = LoggerFactory.getLogger(JWTTokenUtil.class);
+	static final long EXPIRATIONTIME = 1000 * 60 * 5;
 	static final String SECRET = "ThisIsASecret";
 	static final String TOKEN_PREFIX = "Bearer";
 	static final String HEADER_STRING = "Authorization";
 	static String last;
 	
 	final ResponseEntity<String> addAuthentication(User user) {
-		String JWT = Jwts.builder()
-				.setExpiration(new Date(System.currentTimeMillis() + EXPIRATIONTIME))
+		Date expiration = new Date(System.currentTimeMillis() + EXPIRATIONTIME);
+		String JWT = Jwts.builder()				
+				.setExpiration(expiration)
 				.claim("user", user.name)
 				.claim("role", user.role)
-				.claim("area", user.role.equalsIgnoreCase("admin") ? "/administrative" : "/client")
+				.claim("area", user.role.equalsIgnoreCase("admin") ? "admin" : "client")
 			 	.signWith(SignatureAlgorithm.HS512, SECRET).compact();
 		MultiValueMap<String, String> headers = new HttpHeaders();
 		headers.add(HEADER_STRING, TOKEN_PREFIX + " " + JWT);
+		logger.info(String.format("Token issued for %s, expiration: %s", user.name, expiration));
 		return new ResponseEntity<String>(headers, HttpStatus.OK);		
 	}
 
@@ -42,7 +41,8 @@ final class JWTTokenUtil {
 		try {
 			claims = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token.replace(TOKEN_PREFIX, "")).getBody();
 		} catch (Exception x) {
-			x.printStackTrace();
+			logger.debug("Internal Exception", x);
+			throw x;
 		}
 		return claims;
 	}

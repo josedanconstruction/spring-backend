@@ -22,7 +22,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Sorts;
-import josedanconstruction.models.REServiceArea;
+
+import jose.cornado.models.REServiceArea;
 
 // api params keywords, negativeKeywords associations (logical connectors)
 

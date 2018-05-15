@@ -13,7 +13,7 @@ import com.google.gson.GsonBuilder;
 import jose.cornado.Case;
 import jose.cornado.ReactiveMongoRepo;
 import jose.cornado.ReportList;
-import josedanconstruction.models.REServiceArea;
+import jose.cornado.models.REServiceArea;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;

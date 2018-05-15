@@ -23,7 +23,7 @@ import com.opencsv.CSVReader;
 
 import jose.cornado.Case;
 import jose.cornado.MongoRepo;
-import josedanconstruction.models.REServiceArea;
+import jose.cornado.models.REServiceArea;
 import josedanconstruction.models.PermitUrl;
 
 final class UpdatePermits extends ACityTask {
@@ -46,14 +46,14 @@ final class UpdatePermits extends ACityTask {
 //		FileWriter writer;
 		while (!Thread.currentThread().isInterrupted()){
  			try {
-				for(PermitUrl p : resLocation.permits){
+				for(String p : resLocation.permits){
 					try{
 //						writer = new FileWriter("/Users/jose/babushka.json");
 //						sb1 = new StringBuilder("[");
-						hb = RequestEntity.head(new URL(p.getUrl()).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0").ifModifiedSince(resLocation.lastModified);
+						hb = RequestEntity.head(new URL(p).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0").ifModifiedSince(resLocation.lastModified);
 						response = restClient.exchange(hb.build(), String.class);
 						if (response.getStatusCode().is2xxSuccessful()){
-							hb = RequestEntity.get(new URL(p.getUrl()).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0").ifModifiedSince(this.resLocation.lastModified);
+							hb = RequestEntity.get(new URL(p).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0").ifModifiedSince(this.resLocation.lastModified);
 							response = restClient.exchange(hb.build(), String.class);
 							if (response.getStatusCode().is2xxSuccessful() && response.hasBody()){
 								//try(CSVReader rd = new CSVReader(new FileReader(new File("/Users/jose/2017_Construction_Permits.june.csv")))){

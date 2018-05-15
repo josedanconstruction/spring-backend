@@ -16,7 +16,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 
 @Configuration
@@ -25,24 +24,18 @@ public class REServiceApiSecurity extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		HashSet<String> set;
-		Hashtable<String, HashSet<String>> verbToPath = new Hashtable<String, HashSet<String>>();
-		verbToPath.put("GET", new HashSet<String>());
-		verbToPath.put("PUT", new HashSet<String>());
-		set = verbToPath.get("GET");
-		set.addAll(Arrays.asList(new String[]{"/client/api", "/administrative/api/logs"}));
-		set = verbToPath.get("PUT");
-		set.addAll(Arrays.asList(new String[]{"/administrative/api/add"}));
+		HashSet<String> set = new HashSet<String>(Arrays.asList("GET", "POST"));
+		HashSet<String> roles = new HashSet<String>(Arrays.asList("ADMIN"));
 		http
 		.cors().and()
-		.csrf().disable() //rest api do not need csrf		
+		.csrf().disable() //rest api does not need csrf		
 		.authorizeRequests()
-		.antMatchers(HttpMethod.POST, "/api/security").permitAll()
-		.antMatchers(HttpMethod.GET, "/api/client/*", "/api/admin/*").fullyAuthenticated().and()
-//		.antMatchers(HttpMethod.PUT, "/administrative/api/*").fullyAuthenticated()
-//		.anyRequest().denyAll().and()		
-        /*.addFilterBefore(new REServicesEndPointFllter(verbToPath), 
-        		UsernamePasswordAuthenticationFilter.class)*/;
+		.antMatchers(HttpMethod.POST, "/api/security/*").permitAll()
+		.antMatchers(HttpMethod.GET, "/api/client/*", "/api/admin/**").authenticated()
+		.antMatchers(HttpMethod.POST, "/api/admin/**").authenticated()
+		.anyRequest().denyAll().and()		
+        .addFilterBefore(new REServicesEndPointJWTFilter("/api/admin/**", set, roles), 
+        		UsernamePasswordAuthenticationFilter.class);
 	}
 
 	@Autowired
@@ -56,16 +49,19 @@ public class REServiceApiSecurity extends WebSecurityConfigurerAdapter {
 	CorsConfigurationSource corsConfigurationSource() {
 		Hashtable<String, CorsConfiguration> configurationsMap = new Hashtable<String, CorsConfiguration>(); 
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList("jose + dan"));
+		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
 		configuration.setAllowedMethods(Arrays.asList("POST"));
-		configurationsMap.put("/api/security", configuration);
+		configuration.setAllowedHeaders(Arrays.asList("cache-control", "Content-Type"));
+		configurationsMap.put("/api/security/login", configuration);
 		configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList("jose + dan"));
+		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
+		configuration.setAllowedHeaders(Arrays.asList("cache-control", "Content-Type"));
 		configurationsMap.put("/api/admin", configuration);
 		configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList("jose + dan"));
+		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
 		configuration.setAllowedMethods(Arrays.asList("GET"));
+		configuration.setAllowedHeaders(Arrays.asList("cache-control", "Content-Type"));
 		configurationsMap.put("/api/client", configuration);
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.setCorsConfigurations(configurationsMap);

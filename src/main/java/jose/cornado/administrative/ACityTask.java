@@ -18,8 +18,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import jose.cornado.MongoRepo;
+import jose.cornado.models.REServiceArea;
 import josedanconstruction.models.PermitUrl;
-import josedanconstruction.models.REServiceArea;
 
 abstract class ACityTask  implements Runnable{
 
@@ -39,8 +39,8 @@ abstract class ACityTask  implements Runnable{
 		JsonObject property, geometry, feature, geoJson;
 		String number;
 		Hashtable<String, JsonObject> ret = new Hashtable<String, JsonObject>();
-		for(PermitUrl g : resLocation.geo){
-			hb = RequestEntity.get(new URL(g.getUrl()).toURI()).accept(MediaType.APPLICATION_JSON).header("user-agent", "curl/7.43.0");
+		for(String g : resLocation.geo){
+			hb = RequestEntity.get(new URL(g).toURI()).accept(MediaType.APPLICATION_JSON).header("user-agent", "curl/7.43.0");
 			response = restClient.exchange(hb.build(), String.class);
 			if (response.getStatusCodeValue() == 200){
 				if (response.hasBody()){

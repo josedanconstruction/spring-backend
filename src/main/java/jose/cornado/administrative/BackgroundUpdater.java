@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import jose.cornado.MongoRepo;
-import josedanconstruction.models.REServiceArea;
+import jose.cornado.models.REServiceArea;
 
 import java.util.HashSet;
 

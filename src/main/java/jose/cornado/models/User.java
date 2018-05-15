@@ -1,4 +1,4 @@
-package jose.cornado.security;
+package jose.cornado.models;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -15,4 +15,9 @@ public class User {
 
     @NotNull
     public String role;
+    
+    @Override
+    public String toString(){
+    	return String.format("User->name: \"%s\" role: \"%s\"", name, role);
+    }
 }

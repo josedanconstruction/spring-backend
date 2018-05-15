@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import josedanconstruction.models.REServiceArea;
+import jose.cornado.models.REServiceArea;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

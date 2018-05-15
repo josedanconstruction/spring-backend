@@ -1,7 +1,5 @@
 package jose.cornado.administrative;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -13,7 +11,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.opencsv.CSVReader;
 import org.bson.Document;
-import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.RequestEntity.HeadersBuilder;
@@ -21,11 +20,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.async.DeferredResult;
 import jose.cornado.MongoRepo;
-import josedanconstruction.models.PermitUrl;
-import josedanconstruction.models.REServiceArea;
+import jose.cornado.models.REServiceArea;
 
 final class AddPermits extends ACityTask{
 
+	private static final Logger logger = LoggerFactory.getLogger(AddPermits.class);
+	
 	private DeferredResult<ResponseEntity<String>> deferredResult;
 	
 	AddPermits(DeferredResult<ResponseEntity<String>> dr, RestTemplate rc, MongoRepo mt, REServiceArea a) throws Exception{
@@ -35,7 +35,7 @@ final class AddPermits extends ACityTask{
 	
 	public void run() {
 		ArrayList<Document> list;
-		HeadersBuilder hb;
+		HeadersBuilder<?> hb;
 		Gson gson;
 		String s;
 		Document d;
@@ -44,14 +44,13 @@ final class AddPermits extends ACityTask{
 		ResponseEntity<String> response;
 		Hashtable<String, JsonObject> geoJson = null;
 
-		for(PermitUrl p : resLocation.permits){
+		for(String p : resLocation.permits){
 			try{
 				//Boulder site only seems to accept curl as user agent
-				hb = RequestEntity.get(new URL(p.getUrl()).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0"); 
+				hb = RequestEntity.get(new URL(p).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0"); 
 				response = restClient.exchange(hb.build(), String.class);
 				if (response.getStatusCodeValue() == 200){
 					if (response.hasBody()){
-						//try(CSVReader rd = new CSVReader(new FileReader(new File("/Users/jose/2017_Construction_Permits.csv")))){ //reads the may 2017 permits file locally.
 						try(CSVReader rd = new CSVReader(new StringReader(response.getBody()))){ //initial read of the permits file
 							Iterable<String[]> it = () -> rd.iterator();
 							list = new ArrayList<Document>();
@@ -107,19 +106,18 @@ final class AddPermits extends ACityTask{
 							repo.addToCityCatalog(resLocation);
 							//The report is called master
 							repo.insert(resLocation.area, Document.parse("{ reports : true, list : [\"master\"]}"));
-							//Send response back to admin ui.
-							deferredResult.setResult(new ResponseEntity<String>(String.format("area \"%s\" successfully processed", resLocation.area), HttpStatus.OK));
+							logger.info(String.format("area \"%s\" successfully processed", resLocation.area));
 						}
 						catch(Exception x){
-							deferredResult.setErrorResult(x);
-//							repo.deleteCityFromCatalog(resLocation);
+							logger.debug(String.format("area \"%s\" caused exception:", resLocation.area), x);
+							repo.deleteCityFromCatalog(resLocation);
 							break;
 						}
 					}
 				}
 			}
 			catch(Exception x){
-				deferredResult.setErrorResult(x);
+				logger.debug(String.format("area \"%s\" caused exception:", resLocation.area), x);
 				break;
 			}
 		}

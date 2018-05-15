@@ -1,32 +1,34 @@
 package jose.cornado.administrative;
 
-import java.io.BufferedReader;
-import java.io.StringReader;
 
+import javax.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.client.RestTemplate;
-import com.google.gson.Gson;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
-
 import jose.cornado.MongoRepo;
-import josedanconstruction.models.REServiceArea;
+import jose.cornado.models.REServiceArea;
 
 @RestController(value="AdministrativeController")
 @RequestMapping(Controller.apiMapping)
 public class Controller {
 
-	public final static String rootMapping = "/administrative";
-	public final static String apiMapping = "/administrative/api"; 
+	private static final Logger logger = LoggerFactory.getLogger(Controller.class);
+
+	public final static String apiMapping = "/api/admin/city"; 
 	@Autowired
 	private MongoRepo repo;
 	
@@ -36,30 +38,21 @@ public class Controller {
 	@Autowired
 	private SimpleAsyncTaskExecutor taskPool;
 	
-	@PutMapping(value="/add", consumes = {"application/json"})
-	public DeferredResult<ResponseEntity<String>> add(final @RequestBody String json){
-		String s;
-		REServiceArea resa;
-		Gson gson = new Gson();
+	@PostMapping("/add")
+	public DeferredResult<ResponseEntity<String>> add(final @RequestBody @Valid REServiceArea resa, BindingResult bindingResult){
 		DeferredResult<ResponseEntity<String>> dr = new DeferredResult<ResponseEntity<String>>();
 		
-		try(BufferedReader br = new BufferedReader(new StringReader(json))){
-			resa = gson.fromJson(br, REServiceArea.class);
-			if (!repo.collectionExists(resa.area))
+		if (!repo.collectionExists(resa.area))
+			try {
 				taskPool.execute(new AddPermits(dr, restClient, repo, resa), AsyncTaskExecutor.TIMEOUT_IMMEDIATE);
-			else
-				dr.setErrorResult(String.format("area->%s was already added", resa.area));
+				dr.setResult(new ResponseEntity<String>(String.format("{ \"message\": \"%s successfully queued, check the logs shortly\"}", resa.area), HttpStatus.OK));
 
-		}
-		catch(Exception x){
-			if (x instanceof JsonSyntaxException)
-				s = "The configuration file is NOT valid";
-			else if (x instanceof JsonIOException)
-				s = "The configuration file is CORRUPTED";
-			else
-				s = x.getClass().getName();
-			dr.setErrorResult(s);
-		}
+			} catch (Exception x) {
+				logger.debug("Internal Exception", x);
+				dr.setErrorResult(x);
+			}
+		else
+			dr.setErrorResult(String.format("{\"message\": \"%s was already added\"}", resa.area));
 		return dr; 
 	}
 	
