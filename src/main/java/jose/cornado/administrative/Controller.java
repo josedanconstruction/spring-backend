@@ -62,5 +62,4 @@ public class Controller {
 		taskPool.execute(new CollectLogs(dr, repo));
 		return dr;
 	}
-
 }

@@ -33,7 +33,7 @@ final class JWTTokenUtil {
 		MultiValueMap<String, String> headers = new HttpHeaders();
 		headers.add(HEADER_STRING, TOKEN_PREFIX + " " + JWT);
 		logger.info(String.format("Token issued for %s, expiration: %s", user.name, expiration));
-		return new ResponseEntity<String>(headers, HttpStatus.OK);		
+		return new ResponseEntity<String>(TOKEN_PREFIX + " " + JWT, HttpStatus.OK);		
 	}
 
 	final Claims getClaims(String token) {
