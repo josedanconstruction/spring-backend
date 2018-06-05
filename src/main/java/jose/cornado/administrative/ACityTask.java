@@ -19,7 +19,7 @@ import com.google.gson.JsonParser;
 
 import jose.cornado.MongoRepo;
 import jose.cornado.models.REServiceArea;
-import josedanconstruction.models.PermitUrl;
+//import josedanconstruction.models.PermitUrl;
 
 abstract class ACityTask  implements Runnable{
 
