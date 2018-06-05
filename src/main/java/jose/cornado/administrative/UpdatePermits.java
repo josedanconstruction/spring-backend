@@ -1,9 +1,6 @@
 package jose.cornado.administrative;
 
 import java.io.StringReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -24,7 +21,7 @@ import com.opencsv.CSVReader;
 import jose.cornado.Case;
 import jose.cornado.MongoRepo;
 import jose.cornado.models.REServiceArea;
-import josedanconstruction.models.PermitUrl;
+//import josedanconstruction.models.PermitUrl;
 
 final class UpdatePermits extends ACityTask {
 	int timeToSleep = 60000;  
