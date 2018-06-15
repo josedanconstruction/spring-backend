@@ -32,7 +32,6 @@ public class REServiceApiSecurity extends WebSecurityConfigurerAdapter {
 		.authorizeRequests()
 		.antMatchers(HttpMethod.POST, "/api/security/*").permitAll()
 		.antMatchers(HttpMethod.GET, "/api/client/*", "/api/admin/**").authenticated()
-//		.antMatchers(HttpMethod.OPTIONS, "/api/admin/**").permitAll()
 		.antMatchers(HttpMethod.POST, "/api/admin/**").authenticated()
 		.anyRequest().denyAll().and()		
         .addFilterBefore(new REServicesEndPointJWTFilter("/api/admin/**", set, roles), 
@@ -58,7 +57,7 @@ public class REServiceApiSecurity extends WebSecurityConfigurerAdapter {
 		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
 		configuration.setAllowedHeaders(Arrays.asList("cache-control", "Content-Type"));
-		configurationsMap.put("/api/admin", configuration);
+		configurationsMap.put("/api/admin/**", configuration);
 		configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
 		configuration.setAllowedMethods(Arrays.asList("GET"));
