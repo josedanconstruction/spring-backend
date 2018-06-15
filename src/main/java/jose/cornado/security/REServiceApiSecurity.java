@@ -32,6 +32,7 @@ public class REServiceApiSecurity extends WebSecurityConfigurerAdapter {
 		.authorizeRequests()
 		.antMatchers(HttpMethod.POST, "/api/security/*").permitAll()
 		.antMatchers(HttpMethod.GET, "/api/client/*", "/api/admin/**").authenticated()
+		.antMatchers(HttpMethod.OPTIONS, "/api/admin/**").permitAll()
 		.antMatchers(HttpMethod.POST, "/api/admin/**").authenticated()
 		.anyRequest().denyAll().and()		
         .addFilterBefore(new REServicesEndPointJWTFilter("/api/admin/**", set, roles), 
