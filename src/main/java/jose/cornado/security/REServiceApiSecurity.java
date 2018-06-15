@@ -49,17 +49,17 @@ public class REServiceApiSecurity extends WebSecurityConfigurerAdapter {
 	CorsConfigurationSource corsConfigurationSource() {
 		Hashtable<String, CorsConfiguration> configurationsMap = new Hashtable<String, CorsConfiguration>(); 
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost"));
 		configuration.setAllowedMethods(Arrays.asList("POST"));
 		configuration.setAllowedHeaders(Arrays.asList("cache-control", "Content-Type"));
 		configurationsMap.put("/api/security/login", configuration);
 		configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost"));
 		configuration.setAllowedMethods(Arrays.asList("POST"));
 		configuration.setAllowedHeaders(Arrays.asList("cache-control", "Content-Type", "Authorization"));
 		configurationsMap.put("/api/admin/city/add", configuration);
 		configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost"));
 		configuration.setAllowedMethods(Arrays.asList("GET"));
 		configuration.setAllowedHeaders(Arrays.asList("cache-control", "Content-Type", "Authorization"));
 		configurationsMap.put("/api/client", configuration);
