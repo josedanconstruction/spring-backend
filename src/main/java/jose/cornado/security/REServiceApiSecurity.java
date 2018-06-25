@@ -25,16 +25,18 @@ public class REServiceApiSecurity extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		HashSet<String> set = new HashSet<String>(Arrays.asList("GET", "POST"));
-		HashSet<String> roles = new HashSet<String>(Arrays.asList("ADMIN"));
+		HashSet<String> roles = new HashSet<String>(Arrays.asList("ADMIN", "CLIENT"));
 		http
 		.cors().and()
 		.csrf().disable() //rest api does not need csrf		
 		.authorizeRequests()
 		.antMatchers(HttpMethod.POST, "/api/security/*").permitAll()
-		.antMatchers(HttpMethod.GET, "/api/client/*", "/api/admin/**").authenticated()
+		.antMatchers(HttpMethod.GET, "/api/client/**", "/api/admin/**").authenticated()
 		.antMatchers(HttpMethod.POST, "/api/admin/**").authenticated()
 		.anyRequest().denyAll().and()		
         .addFilterBefore(new REServicesEndPointJWTFilter("/api/admin/**", set, roles), 
+        		UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(new REServicesEndPointJWTFilter("/api/client/**", set, roles), 
         		UsernamePasswordAuthenticationFilter.class);
 	}
 
