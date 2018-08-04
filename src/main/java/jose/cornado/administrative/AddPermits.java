@@ -3,6 +3,7 @@ package jose.cornado.administrative;
 import java.io.StringReader;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
@@ -47,11 +48,15 @@ final class AddPermits extends ACityTask{
 		for(String p : resLocation.permits){
 			try{
 				//Boulder site only seems to accept curl as user agent
-				hb = RequestEntity.get(new URL(p).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0"); 
+				hb = RequestEntity.get(new URL(p).toURI()).accept(MediaType.ALL).header("user-agent", "curl/7.43.0");
+				logger.info(String.format("City: %s will get permits from %s...", resLocation.area, p));
 				response = restClient.exchange(hb.build(), String.class);
 				if (response.getStatusCodeValue() == 200){
+					logger.info(String.format("City: %s request successful...", resLocation.area));
 					if (response.hasBody()){
+						
 						try(CSVReader rd = new CSVReader(new StringReader(response.getBody()))){ //initial read of the permits file
+							logger.info(String.format("City: %s processi ng response...", resLocation.area));
 							Iterable<String[]> it = () -> rd.iterator();
 							list = new ArrayList<Document>();
 							gson =  new Gson();
@@ -61,7 +66,7 @@ final class AddPermits extends ACityTask{
 							//First line discarded
 							it.iterator().next();
 							//Building the log document to insert in mongo. 
-							sb = new StringBuilder(String.format("{\"area\" : \"%s\", \"when\" : \"%s\",\"insert\": [", resLocation.area ,new SimpleDateFormat("yyyy.MM.dd G 'at' HH:mm:ss z").format(new Date(System.currentTimeMillis()))));
+							sb = new StringBuilder(String.format("{\"area\" : \"%s\", \"when\" : \"%s\",\"insert\": [", resLocation.area , LocalDateTime.now().toString()));
 							for(String[] row : it){
 								//We get the row from the csv reader, pass it to BoulderCountyCase then serialize this into json.
 								job = new JsonParser().parse(gson.toJson(new BoulderCountyCase(row))).getAsJsonObject();
@@ -102,11 +107,10 @@ final class AddPermits extends ACityTask{
 							repo.insert("log", Document.parse(sb.toString()));
 							//This is the date that triggers the update
 							resLocation.lastModified = System.currentTimeMillis();
-//							resLocation.lastModified = new SimpleDateFormat("mm/dd/yyyy").parse("06/01/2017").getTime(); //when reading from local May 2017 file
 							repo.addToCityCatalog(resLocation);
 							//The report is called master
 							repo.insert(resLocation.area, Document.parse("{ reports : true, list : [\"master\"]}"));
-							logger.info(String.format("area \"%s\" successfully processed", resLocation.area));
+							logger.info(String.format("City \"%s\" successfully processed", resLocation.area));
 						}
 						catch(Exception x){
 							logger.debug(String.format("area \"%s\" caused exception:", resLocation.area), x);

@@ -1,6 +1,8 @@
 package jose.cornado.administrative;
 
 
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -57,8 +59,8 @@ public class Controller {
 	}
 	
 	@GetMapping(value="/logs", produces = {"application/json"})
-	public DeferredResult<ResponseEntity<String>> logs(){
-		DeferredResult<ResponseEntity<String>> dr = new DeferredResult<ResponseEntity<String>>();
+	public DeferredResult<ResponseEntity<List<CityLogHeader>>> logs(){
+		DeferredResult<ResponseEntity<List<CityLogHeader>>> dr = new DeferredResult<ResponseEntity<List<CityLogHeader>>>();
 		taskPool.execute(new CollectLogs(dr, repo));
 		return dr;
 	}

@@ -4,6 +4,8 @@ package jose.cornado;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -23,6 +25,7 @@ import com.google.gson.stream.JsonWriter;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Sorts;
 
+import jose.cornado.administrative.CityLogHeader;
 import jose.cornado.models.REServiceArea;
 
 // api params keywords, negativeKeywords associations (logical connectors)
@@ -100,19 +103,14 @@ public class MongoRepo {
 		template.upsert(query2, update, "cities");
 	}
 	
-	public String getLogs(){
-		int offset;
-		StringBuilder sb = new StringBuilder("[");
-		MongoCursor<Document> mc = template.getCollection("log").find().iterator();
-			while(mc.hasNext()){
-				sb.append(mc.next().toJson());
-				sb.append(',');
-			}
-		offset = sb.length() - 1;
-		if (sb.charAt(offset) == ',')
-			sb.setCharAt(offset, ']');
-		else
-			sb.append(']');
-		return  sb.toString();
-	}	
+	public List<CityLogHeader> getLogs(){
+		Query filter = new Query();
+
+		filter.fields().include("area");
+		filter.fields().include("when");
+		filter.fields().exclude("_id");
+		return template.find(filter, CityLogHeader.class, "log");
+	}
+	
 }
+

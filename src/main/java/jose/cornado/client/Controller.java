@@ -22,7 +22,7 @@ public class Controller {
 	private ReactiveMongoRepo mongoRepo;
 	
 	@GetMapping("city")
-	public  DeferredResult<ResponseEntity<String>> getReport(@RequestParam(name="area", required=true) String area, @RequestParam(name="report", required=false) String report){
+	public  DeferredResult<ResponseEntity<String>> getReport(@RequestParam(name="area", required=true) String area,  @RequestParam(name="report", required=false) String report){
 		
 		DeferredResult<ResponseEntity<String>> dr = new DeferredResult<ResponseEntity<String>>();
 		
