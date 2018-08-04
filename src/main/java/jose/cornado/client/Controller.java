@@ -1,5 +1,7 @@
 package jose.cornado.client;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import jose.cornado.Case;
 import jose.cornado.ReactiveMongoRepo;
 
 @RestController(value="ClientController")
@@ -22,9 +25,8 @@ public class Controller {
 	private ReactiveMongoRepo mongoRepo;
 	
 	@GetMapping("city")
-	public  DeferredResult<ResponseEntity<String>> getReport(@RequestParam(name="area", required=true) String area,  @RequestParam(name="report", required=false) String report){
-		
-		DeferredResult<ResponseEntity<String>> dr = new DeferredResult<ResponseEntity<String>>();
+	public  DeferredResult<ResponseEntity<?>> getReport(@RequestParam(name="area", required=true) String area,  @RequestParam(name="report", required=false) String report){
+		DeferredResult<ResponseEntity<?>> dr = new DeferredResult<ResponseEntity<?>>();
 		
 		if(report != null)
 			taskPool.execute(new RestRunnable(area, mongoRepo, dr, RestRunnable.Tasks.REPORT));
@@ -35,9 +37,9 @@ public class Controller {
 	}
 	
 	@GetMapping()
-	public  DeferredResult<ResponseEntity<String>> getCities(){
+	public  DeferredResult<ResponseEntity<?>> getCities(){
 		
-		DeferredResult<ResponseEntity<String>> dr = new DeferredResult<ResponseEntity<String>>();
+		DeferredResult<ResponseEntity<?>> dr = new DeferredResult<ResponseEntity<?>>();
 		taskPool.execute(new RestRunnable(null, mongoRepo, dr, RestRunnable.Tasks.CITIES));
 
 		return dr;

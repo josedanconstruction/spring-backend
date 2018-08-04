@@ -25,9 +25,9 @@ final class RestRunnable implements Runnable {
 	private final Tasks task;
 	private final String area;
 	private final ReactiveMongoRepo mongoRepo;
-	private final DeferredResult<ResponseEntity<String>> deferredResult;
+	private final DeferredResult<ResponseEntity<?>> deferredResult;
 
-	RestRunnable(String a, ReactiveMongoRepo r, DeferredResult<ResponseEntity<String>> dr, Tasks t){
+	RestRunnable(String a, ReactiveMongoRepo r, DeferredResult<ResponseEntity<?>> dr, Tasks t){
 		deferredResult = dr;
 		task = t;
 		mongoRepo = r;
@@ -67,8 +67,7 @@ final class RestRunnable implements Runnable {
 	}
 	
 	private void acceptReport(List<Case> report){
-		Gson gson = new Gson(); 
-		deferredResult.setResult(new ResponseEntity<String>(gson.toJson(report), HttpStatus.OK));
+		deferredResult.setResult(new ResponseEntity<List<Case>>(report, HttpStatus.OK));
 	}
 	
 	private void accepCityList(List<REServiceArea> list){
