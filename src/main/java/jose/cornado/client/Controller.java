@@ -25,13 +25,13 @@ public class Controller {
 	private ReactiveMongoRepo mongoRepo;
 	
 	@GetMapping("city")
-	public  DeferredResult<ResponseEntity<?>> getReport(@RequestParam(name="area", required=true) String area,  @RequestParam(name="report", required=false) String report){
+	public  DeferredResult<ResponseEntity<?>> getReport(@RequestParam(name="area", required=true) String area,  @RequestParam(name="report", required=true) String report, @RequestParam(name="pageSize", required=true) int pageSize, @RequestParam(name="page", required=true) int page){
 		DeferredResult<ResponseEntity<?>> dr = new DeferredResult<ResponseEntity<?>>();
 		
 		if(report != null)
-			taskPool.execute(new RestRunnable(area, mongoRepo, dr, RestRunnable.Tasks.REPORT));
+			taskPool.execute(new RestRunnable(area, mongoRepo, pageSize, page, dr, RestRunnable.Tasks.REPORT));
 		else
-			taskPool.execute(new RestRunnable(area, mongoRepo, dr, RestRunnable.Tasks.REPORT_LIST));
+			taskPool.execute(new RestRunnable(area, mongoRepo, pageSize, page, dr, RestRunnable.Tasks.REPORT_LIST));
 
 		return dr;
 	}
@@ -40,7 +40,7 @@ public class Controller {
 	public  DeferredResult<ResponseEntity<?>> getCities(){
 		
 		DeferredResult<ResponseEntity<?>> dr = new DeferredResult<ResponseEntity<?>>();
-		taskPool.execute(new RestRunnable(null, mongoRepo, dr, RestRunnable.Tasks.CITIES));
+		taskPool.execute(new RestRunnable(null, mongoRepo, 0, 0, dr, RestRunnable.Tasks.CITIES));
 
 		return dr;
 	}

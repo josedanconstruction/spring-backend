@@ -30,14 +30,14 @@ public class ReactiveMongoRepo {
 		return ret;
 	}
 	
-	public Flux<Case> getMasterReport(String collection){
+	public Flux<Case> getMasterReport(String collection, int pageSize, int page){
 		Query query2;
-		Flux<Case> ret = null;
 		query2 = new Query();
-		
+		query2.skip((1 + page) * pageSize);
+		query2.limit(pageSize);
+		query2.fields().exclude("_id");
 		query2.addCriteria(Criteria.where("reportable").is(true)).with(new Sort(Sort.Direction.DESC, "totalValue"));
-		ret = template.find(query2, Case.class, collection);
-		return ret;
+		return template.find(query2, Case.class, collection);
 	}
 	
 	public Mono<List<REServiceArea>> getAvailableCities(){

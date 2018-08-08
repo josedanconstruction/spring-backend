@@ -85,11 +85,7 @@ public class Controller {
 			//TODO: CHECK AGAINST ALL ROLES
 			u = (User)auth.getDetails();
 			for(GrantedAuthority role : roles){
-				if (role.getAuthority().endsWith("ADMIN")){
-					success = true;
-					break;
-				}
-				else if (role.getAuthority().endsWith(u.role)){
+				if (role.getAuthority().toLowerCase().endsWith(u.role.toLowerCase())){
 					success = true;
 					break;
 				}

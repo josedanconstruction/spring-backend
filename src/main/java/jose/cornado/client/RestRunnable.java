@@ -24,14 +24,17 @@ final class RestRunnable implements Runnable {
 	
 	private final Tasks task;
 	private final String area;
+	private final int pageSize, page;
 	private final ReactiveMongoRepo mongoRepo;
 	private final DeferredResult<ResponseEntity<?>> deferredResult;
 
-	RestRunnable(String a, ReactiveMongoRepo r, DeferredResult<ResponseEntity<?>> dr, Tasks t){
+	RestRunnable(String a, ReactiveMongoRepo r, int ps, int p, DeferredResult<ResponseEntity<?>> dr, Tasks t){
 		deferredResult = dr;
 		task = t;
 		mongoRepo = r;
 		area = a;
+		pageSize = ps;
+		page = p;
 	}
 	
 	public void run() {
@@ -47,7 +50,7 @@ final class RestRunnable implements Runnable {
 				deferredResult.setResult(new ResponseEntity<String>(String.format("Could NOT find a list of reports for: %s", area), HttpStatus.NOT_FOUND));
 			break;
 		case REPORT:
-			report = mongoRepo.getMasterReport(area).collectList();
+			report = mongoRepo.getMasterReport(area, pageSize, page).collectList();
 			report.subscribe(this::acceptReport, this::accept);
 			break;
 		case CITIES:
@@ -71,7 +74,6 @@ final class RestRunnable implements Runnable {
 	}
 	
 	private void accepCityList(List<REServiceArea> list){
-		Gson gson = new Gson(); 
-		deferredResult.setResult(new ResponseEntity<String>(gson.toJson(list), HttpStatus.OK));
+		deferredResult.setResult(new ResponseEntity<List<REServiceArea>>(list, HttpStatus.OK));
 	}
 }
