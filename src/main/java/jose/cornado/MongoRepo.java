@@ -1,15 +1,7 @@
 package jose.cornado;
 
-
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
 import javax.annotation.PostConstruct;
-
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -18,13 +10,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
-import org.springframework.data.domain.Sort;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonWriter;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.model.Sorts;
-
 import jose.cornado.administrative.CityLogHeader;
 import jose.cornado.models.REServiceArea;
 
@@ -41,9 +26,12 @@ public class MongoRepo {
 	private void init(){
 		if (!template.collectionExists("cities")){
 			template.createCollection("cities");
+			template.indexOps("cities").ensureIndex(new TextIndexDefinitionBuilder().onField("area").named("master").build());
 			buildIndex("cities", "area");
 			template.createCollection("logs");
 			buildIndex("logs", "when");
+			template.createCollection("users");
+			template.indexOps("users").ensureIndex(new TextIndexDefinitionBuilder().onFields("userName", "city").named("userCity").build());			
 		}		
 	}
 	
@@ -60,7 +48,7 @@ public class MongoRepo {
 	}
 	
 	public void buildIndex(String c, String f){		
-		template.indexOps(c).ensureIndex(new TextIndexDefinitionBuilder().onField(f).named("master").build());
+		
 	}
 	
 	public void addToCityCatalog(REServiceArea resa){

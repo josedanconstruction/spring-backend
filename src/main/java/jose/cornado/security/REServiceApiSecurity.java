@@ -24,7 +24,7 @@ public class REServiceApiSecurity extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		HashSet<String> set = new HashSet<String>(Arrays.asList("GET", "POST"));
+		HashSet<String> set = new HashSet<String>(Arrays.asList("GET", "POST", "PUT"));
 		HashSet<String> roles = new HashSet<String>(Arrays.asList("ADMIN", "CLIENT"));
 		http
 		.cors().and()
@@ -32,6 +32,7 @@ public class REServiceApiSecurity extends WebSecurityConfigurerAdapter {
 		.authorizeRequests()
 		.antMatchers(HttpMethod.POST, "/api/security/*").permitAll()
 		.antMatchers(HttpMethod.GET, "/api/client/**", "/api/admin/**").authenticated()
+		.antMatchers(HttpMethod.PUT, "/api/client/**").authenticated()
 		.antMatchers(HttpMethod.POST, "/api/admin/**").authenticated()
 		.anyRequest().denyAll().and()		
         .addFilterBefore(new REServicesEndPointJWTFilter("/api/admin/**", set, roles), 
@@ -62,7 +63,7 @@ public class REServiceApiSecurity extends WebSecurityConfigurerAdapter {
 		configurationsMap.put("/api/admin/**", configuration);
 		configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-		configuration.setAllowedMethods(Arrays.asList("GET"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "PUT"));
 		configuration.setAllowedHeaders(Arrays.asList("cache-control", "Content-Type", "Authorization"));
 		configurationsMap.put("/api/client/**", configuration);
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

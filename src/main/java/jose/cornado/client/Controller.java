@@ -1,18 +1,18 @@
 package jose.cornado.client;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import jose.cornado.Case;
 import jose.cornado.ReactiveMongoRepo;
+import jose.cornado.SortField;
 
 @RestController(value="ClientController")
 @RequestMapping(Controller.apiMapping)
@@ -37,12 +37,18 @@ public class Controller {
 	}
 	
 	@GetMapping()
-	public  DeferredResult<ResponseEntity<?>> getCities(){
-		
+	public  DeferredResult<ResponseEntity<?>> getCities(){		
 		DeferredResult<ResponseEntity<?>> dr = new DeferredResult<ResponseEntity<?>>();
 		taskPool.execute(new RestRunnable(null, mongoRepo, 0, 0, dr, RestRunnable.Tasks.CITIES));
-
 		return dr;
 	}
-
+	
+	@PutMapping("filters")
+	public  DeferredResult<ResponseEntity<?>> updateUserQuery(@RequestParam(name="userName", required=true) String userName, @RequestParam(name="area", required=true) String area, @RequestBody(required=true)SortField[] sortFields){
+		DeferredResult<ResponseEntity<?>> dr = new DeferredResult<ResponseEntity<?>>();
+		RestRunnable rr = new RestRunnable(area, mongoRepo, 0, 0, dr, RestRunnable.Tasks.FILTERS);
+		rr.setFiltersData(userName, sortFields);
+		taskPool.execute(rr);
+		return dr;
+	}
 }

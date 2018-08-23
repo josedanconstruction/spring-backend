@@ -1,5 +1,6 @@
 package jose.cornado.client;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -9,10 +10,13 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mongodb.client.result.UpdateResult;
 
 import jose.cornado.Case;
 import jose.cornado.ReactiveMongoRepo;
 import jose.cornado.ReportList;
+import jose.cornado.SortField;
+import jose.cornado.SortFields;
 import jose.cornado.models.REServiceArea;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -20,14 +24,17 @@ import reactor.core.publisher.SignalType;
 
 final class RestRunnable implements Runnable {
 
-	public enum  Tasks {CITIES, REPORT_LIST, REPORT};
+	public enum  Tasks {CITIES, REPORT_LIST, REPORT, FILTERS};
 	
+	private SortField[] sortFields;
+	private String userName;
 	private final Tasks task;
 	private final String area;
 	private final int pageSize, page;
 	private final ReactiveMongoRepo mongoRepo;
 	private final DeferredResult<ResponseEntity<?>> deferredResult;
-
+	
+	
 	RestRunnable(String a, ReactiveMongoRepo r, int ps, int p, DeferredResult<ResponseEntity<?>> dr, Tasks t){
 		deferredResult = dr;
 		task = t;
@@ -41,6 +48,7 @@ final class RestRunnable implements Runnable {
 		Mono<List<REServiceArea>> cities;
 		Mono<List<Case>> report;
 		Mono<ReportList> reports;
+		Mono<SortFields> filtersResult;
 		switch(task){
 		case REPORT_LIST:
 			reports = mongoRepo.getAvailableReports(area);
@@ -57,9 +65,18 @@ final class RestRunnable implements Runnable {
 			cities = mongoRepo.getAvailableCities();
 			cities.subscribe(this::accepCityList, this::accept);
 			break;
+		case FILTERS:
+			filtersResult = mongoRepo.updateSortFields(sortFields, userName, area);
+			filtersResult.subscribe(this::acceptFiltersResult, this::accept);
+			break;
 		}
 	}
-
+	
+	void setFiltersData(String un, SortField[] sf){
+		userName = un;
+		sortFields = sf;
+	}
+	
 	private void acceptReportList(ReportList rl){
 		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create(); 
 		deferredResult.setResult(new ResponseEntity<String>(gson.toJson(rl.list), HttpStatus.OK));
@@ -75,5 +92,9 @@ final class RestRunnable implements Runnable {
 	
 	private void accepCityList(List<REServiceArea> list){
 		deferredResult.setResult(new ResponseEntity<List<REServiceArea>>(list, HttpStatus.OK));
+	}
+	
+	private void acceptFiltersResult(SortFields r){
+		deferredResult.setResult(new ResponseEntity<String>("success", HttpStatus.OK));
 	}
 }
