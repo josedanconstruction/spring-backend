@@ -1,18 +1,16 @@
 package jose.cornado;
 
-import java.util.ArrayList;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
-
-import com.mongodb.client.result.UpdateResult;
-
 import jose.cornado.models.REServiceArea;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -51,9 +49,14 @@ public class ReactiveMongoRepo {
 	public Mono<SortFields> updateSortFields(SortField[] sortFields, String userName, String city)
 	{
 		SortFields sf = new SortFields();
-		sf.city = city;
-		sf.userName = userName;
-		sf.sortFieldArray = sortFields;		
+		try {
+			sf.key = new BigInteger(MessageDigest.getInstance("MD5").digest(String.format("%s:%s", userName, city).getBytes()));
+			sf.city = city;
+			sf.userName = userName;
+			sf.sortFieldArray = sortFields;		
+		} catch (NoSuchAlgorithmException e) {
+		}
 		return template.save(sf, "users");
+
 	}
 }
