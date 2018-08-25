@@ -51,8 +51,6 @@ public class ReactiveMongoRepo {
 		SortFields sf = new SortFields();
 		try {
 			sf.key = new BigInteger(MessageDigest.getInstance("MD5").digest(String.format("%s:%s", userName, city).getBytes()));
-			sf.city = city;
-			sf.userName = userName;
 			sf.sortFieldArray = sortFields;		
 		} catch (NoSuchAlgorithmException e) {
 		}
