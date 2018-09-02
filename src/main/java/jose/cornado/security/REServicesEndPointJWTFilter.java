@@ -71,7 +71,7 @@ public class REServicesEndPointJWTFilter extends AbstractAuthenticationProcessin
 		ArrayList<SimpleGrantedAuthority> grantedRole;
 		grantedRole = new ArrayList<SimpleGrantedAuthority>();
 		grantedRole.add(new SimpleGrantedAuthority(String.format("%s%s", "ROLE_", token.toUpperCase())));		
-		return new UsernamePasswordAuthenticationToken(claims.get("user").toString(), null, grantedRole);
+		return new UsernamePasswordAuthenticationToken(claims.get("user").toString(), claims, grantedRole);
 	}
 	
 	public void onAuthenticationFailure(HttpServletRequest arg0, HttpServletResponse arg1, AuthenticationException arg2)

@@ -3,6 +3,7 @@ package jose.cornado.client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,10 +45,10 @@ public class Controller {
 	}
 	
 	@PutMapping("filters")
-	public  DeferredResult<ResponseEntity<?>> updateUserQuery(@RequestParam(name="userName", required=true) String userName, @RequestParam(name="area", required=true) String area, @RequestBody(required=true)SortField[] sortFields){
+	public  DeferredResult<ResponseEntity<?>> updateUserQuery(Authentication auth, @RequestParam(name="area", required=true) String area, @RequestBody(required=true)SortField[] sortFields){
 		DeferredResult<ResponseEntity<?>> dr = new DeferredResult<ResponseEntity<?>>();
 		RestRunnable rr = new RestRunnable(area, mongoRepo, 0, 0, dr, RestRunnable.Tasks.FILTERS);
-		rr.setFiltersData(userName, sortFields);
+		rr.setFiltersData(auth.getName(), sortFields);
 		taskPool.execute(rr);
 		return dr;
 	}
