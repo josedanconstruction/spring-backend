@@ -27,19 +27,19 @@ final class RestRunnable implements Runnable {
 	public enum  Tasks {CITIES, REPORT_LIST, REPORT, FILTERS};
 	
 	private SortField[] sortFields;
-	private String userName;
 	private final Tasks task;
-	private final String area;
+	private final String area, user;
 	private final int pageSize, page;
 	private final ReactiveMongoRepo mongoRepo;
 	private final DeferredResult<ResponseEntity<?>> deferredResult;
 	
 	
-	RestRunnable(String a, ReactiveMongoRepo r, int ps, int p, DeferredResult<ResponseEntity<?>> dr, Tasks t){
+	RestRunnable(String a, String u, ReactiveMongoRepo r, int ps, int p, DeferredResult<ResponseEntity<?>> dr, Tasks t){
 		deferredResult = dr;
 		task = t;
 		mongoRepo = r;
 		area = a;
+		user = u;
 		pageSize = ps;
 		page = p;
 	}
@@ -49,31 +49,35 @@ final class RestRunnable implements Runnable {
 		Mono<List<Case>> report;
 		Mono<ReportList> reports;
 		Mono<SortFields> filtersResult;
-		switch(task){
-		case REPORT_LIST:
-			reports = mongoRepo.getAvailableReports(area);
-			if (reports != null)
-				reports.subscribe(this::acceptReportList, this::accept);
-			else
-				deferredResult.setResult(new ResponseEntity<String>(String.format("Could NOT find a list of reports for: %s", area), HttpStatus.NOT_FOUND));
-			break;
-		case REPORT:
-			report = mongoRepo.getMasterReport(area, pageSize, page).collectList();
-			report.subscribe(this::acceptReport, this::accept);
-			break;
-		case CITIES:
-			cities = mongoRepo.getAvailableCities();
-			cities.subscribe(this::accepCityList, this::accept);
-			break;
-		case FILTERS:
-			filtersResult = mongoRepo.updateSortFields(sortFields, userName, area);
-			filtersResult.subscribe(this::acceptFiltersResult, this::accept);
-			break;
+		try{
+			switch(task){
+			case REPORT_LIST:
+				reports = mongoRepo.getAvailableReports(area);
+				if (reports != null)
+					reports.subscribe(this::acceptReportList, this::accept);
+				else
+					deferredResult.setResult(new ResponseEntity<String>(String.format("Could NOT find a list of reports for: %s", area), HttpStatus.NOT_FOUND));
+				break;
+			case REPORT:
+				report = mongoRepo.getMasterReport(area, user, pageSize, page).collectList();
+				report.subscribe(this::acceptReport, this::accept);
+				break;
+			case CITIES:
+				cities = mongoRepo.getAvailableCities();
+				cities.subscribe(this::accepCityList, this::accept);
+				break;
+			case FILTERS:
+				filtersResult = mongoRepo.updateSortFields(sortFields, user, area);
+				filtersResult.subscribe(this::acceptFiltersResult, this::accept);
+				break;
+			}
+		}
+		catch(Exception x){
+			
 		}
 	}
 	
-	void setFiltersData(String un, SortField[] sf){
-		userName = un;
+	void setFiltersData(SortField[] sf){
 		sortFields = sf;
 	}
 	

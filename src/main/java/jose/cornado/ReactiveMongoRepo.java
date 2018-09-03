@@ -32,13 +32,21 @@ public class ReactiveMongoRepo {
 		return ret;
 	}
 	
-	public Flux<Case> getMasterReport(String collection, int pageSize, int page){		
+	public Flux<Case> getMasterReport(String collection, String user, int pageSize, int page) throws NoSuchAlgorithmException{
+		SortFields sfs = template.findById(new BigInteger(MessageDigest.getInstance("MD5").digest(String.format("%s:%s", user, collection).getBytes())), SortFields.class, "users").block();
 		Query query2 = new Query();
 		query2.skip(page * pageSize);
 		query2.limit(pageSize);
 		query2.fields().exclude("_id");
 		query2.addCriteria(Criteria.where("reportable").is(true));
-		query2.with(new Sort(Sort.Direction.DESC, "totalValue"));
+		if (sfs != null){
+			for(SortField sf : sfs.sortFieldArray){
+				query2.with(new Sort(sf.ascending ? Sort.Direction.ASC : Sort.Direction.DESC, sf.field));
+			}
+		}
+		else{
+			query2.with(new Sort(Sort.Direction.DESC, "totalValue"));
+		}
 		return template.find(query2, Case.class, collection);
 	}
 	
